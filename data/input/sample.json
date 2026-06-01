@@ -1,0 +1,11 @@
+{
+  "costMatrix": [
+    [3, 1, 7, 4],
+    [2, 6, 5, 9],
+    [8, 3, 3, 2]
+  ],
+  "supply": [250, 350, 400],
+  "demand": [200, 300, 350, 150],
+  "sourceNames": ["Nhà máy A", "Nhà máy B", "Nhà máy C"],
+  "destinationNames": ["Đại lý 1", "Đại lý 2", "Đại lý 3", "Đại lý 4"]
+}
