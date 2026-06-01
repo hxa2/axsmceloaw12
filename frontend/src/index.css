@@ -1,0 +1,518 @@
+/* src/index.css
+   ==============
+   Design system cho Bài Toán Vận Tải – Teaching-Grade Walkthrough UI
+   Light mode, presentation aesthetic, precision data tool.
+   DESIGN_VARIANCE: 5, MOTION_INTENSITY: 5, VISUAL_DENSITY: 6
+*/
+
+/* ─── Google Fonts ─────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap');
+@import url('katex/dist/katex.min.css');
+
+/* ─── Design Tokens ───────────────────────────────────────────────────── */
+:root {
+  /* Neutral palette: Light presentation mode */
+  --bg-base:      #f8f9fa; /* Cool paper white */
+  --bg-elevated:  #ffffff;
+  --bg-surface:   #ffffff;
+  --bg-inset:     #f1f3f5;
+  --bg-hover:     #e9ecef;
+  --bg-active:    #dee2e6;
+
+  /* Borders */
+  --border-subtle:  #e5e7eb;
+  --border-muted:   #d1d5db;
+  --border-default: #9ca3af;
+  --border-strong:  #6b7280;
+
+  /* Typography */
+  --text-primary:   #111827;
+  --text-secondary: #4b5563;
+  --text-tertiary:  #6b7280;
+  --text-disabled:  #9ca3af;
+  --text-inverse:   #ffffff;
+
+  /* Accent: Indigo / Blue for teaching focus */
+  --accent:         #4f46e5;
+  --accent-hover:   #4338ca;
+  --accent-muted:   rgba(79, 70, 229, 0.1);
+  --accent-subtle:  rgba(79, 70, 229, 0.05);
+
+  /* Semantic colors */
+  --success:        #16a34a;
+  --success-muted:  rgba(22, 163, 74, 0.1);
+  --warning:        #d97706;
+  --warning-muted:  rgba(217, 119, 6, 0.1);
+  --danger:         #dc2626;
+  --danger-muted:   rgba(220, 38, 38, 0.1);
+  --info:           #2563eb;
+  --info-muted:     rgba(37, 99, 235, 0.1);
+
+  /* Matrix Cell Highlights for Algorithm Walkthrough */
+  --basis-bg:       rgba(139, 92, 246, 0.08); /* Soft violet */
+  --basis-border:   rgba(139, 92, 246, 0.4);
+
+  --entering-bg:    rgba(37, 99, 235, 0.15); /* Blue */
+  --entering-border: #2563eb;
+  
+  --leaving-bg:     rgba(220, 38, 38, 0.1); /* Red/Rose */
+  --leaving-border: #dc2626;
+
+  /* Signs */
+  --positive-sign:  #16a34a;
+  --negative-sign:  #dc2626;
+
+  /* Reduced Costs */
+  --rc-negative:    #dc2626;
+  --rc-positive:    #16a34a;
+  --rc-zero:        #6b7280;
+
+  /* Typography scale */
+  --font-sans:  'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono:  'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+
+  /* Spacing scale */
+  --sp-1:  0.25rem;
+  --sp-2:  0.5rem;
+  --sp-3:  0.75rem;
+  --sp-4:  1rem;
+  --sp-5:  1.25rem;
+  --sp-6:  1.5rem;
+  --sp-8:  2rem;
+  --sp-10: 2.5rem;
+  --sp-12: 3rem;
+  --sp-16: 4rem;
+
+  /* Radius scale */
+  --radius-sm: 4px;
+  --radius:    6px;
+  --radius-lg: 10px;
+  --radius-xl: 16px;
+
+  /* Transitions */
+  --transition-fast:   150ms cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-base:   300ms cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-slow:   500ms cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Shadow - very light for presentation */
+  --shadow-sm:  0 1px 2px rgba(0,0,0,0.05);
+  --shadow:     0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+  --shadow-lg:  0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+}
+
+/* ─── Presentation Mode Overrides ─────────────────────────────────────── */
+body.presentation-mode {
+  font-size: 1.125rem; /* Larger base font for projection */
+}
+
+body.presentation-mode h1 { font-size: 2.25rem; }
+body.presentation-mode h2 { font-size: 1.75rem; }
+body.presentation-mode h3 { font-size: 1.375rem; }
+
+/* ─── Reset & Base ────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 15px; /* Slightly larger than standard 14px for better readability */
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-sans);
+  line-height: 1.6;
+  color: var(--text-primary);
+  background-color: var(--bg-base);
+  min-height: 100dvh;
+}
+
+#root {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── Typography ──────────────────────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--text-primary);
+  letter-spacing: -0.015em;
+}
+
+h1 { font-size: 1.875rem; }
+h2 { font-size: 1.5rem; }
+h3 { font-size: 1.25rem; }
+h4 { font-size: 1.125rem; }
+
+p { color: var(--text-secondary); line-height: 1.6; margin-bottom: var(--sp-3); }
+p:last-child { margin-bottom: 0; }
+
+code, pre, kbd, samp {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  background: var(--bg-inset);
+  padding: 0.1em 0.3em;
+  border-radius: var(--radius-sm);
+  color: var(--accent);
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+a:hover { color: var(--accent-hover); }
+
+/* ─── Scrollbars ──────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-base); }
+::-webkit-scrollbar-thumb { background: var(--border-muted); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--border-default); }
+
+/* ─── Layout Utilities ────────────────────────────────────────────────── */
+.container {
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 0 var(--sp-6);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  border: 0;
+}
+
+/* ─── Card / Surface ──────────────────────────────────────────────────── */
+.card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: box-shadow var(--transition-fast);
+}
+
+.card:hover {
+  box-shadow: var(--shadow);
+}
+
+.card-header {
+  padding: var(--sp-4) var(--sp-5);
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  background: var(--bg-surface);
+}
+
+.card-body {
+  padding: var(--sp-5);
+}
+
+/* ─── Buttons ─────────────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  padding: 0.5rem 1rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  font-family: var(--font-sans);
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+  user-select: none;
+  line-height: 1.4;
+}
+
+.btn:active { transform: translateY(1px); }
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+  box-shadow: var(--shadow-sm);
+}
+.btn-primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.btn-secondary {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  border-color: var(--border-muted);
+}
+.btn-secondary:hover:not(:disabled) {
+  background: var(--bg-hover);
+  border-color: var(--border-default);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border-color: transparent;
+}
+.btn-ghost:hover:not(:disabled) {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.btn-danger {
+  background: var(--bg-surface);
+  color: var(--danger);
+  border-color: var(--danger);
+}
+.btn-danger:hover:not(:disabled) {
+  background: var(--danger-muted);
+}
+
+.btn-sm {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.875rem;
+}
+
+.btn-lg {
+  padding: 0.75rem 1.5rem;
+  font-size: 1.125rem;
+  border-radius: var(--radius-lg);
+}
+
+/* ─── Form elements ───────────────────────────────────────────────────── */
+.input {
+  display: block;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9375rem;
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-muted);
+  border-radius: var(--radius);
+  outline: none;
+  transition: all var(--transition-fast);
+}
+.input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-muted);
+}
+.input::placeholder { color: var(--text-disabled); }
+
+.input-mono {
+  font-family: var(--font-mono);
+  text-align: right;
+}
+
+.label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: var(--sp-1);
+}
+
+.select {
+  appearance: none;
+  width: 100%;
+  padding: 0.5rem 2rem 0.5rem 0.75rem;
+  font-size: 0.9375rem;
+  color: var(--text-primary);
+  background: var(--bg-surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right 0.75rem center;
+  border: 1px solid var(--border-muted);
+  border-radius: var(--radius);
+  cursor: pointer;
+  outline: none;
+  transition: all var(--transition-fast);
+}
+.select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-muted);
+}
+
+/* ─── Badges / Tags ───────────────────────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border-radius: 99px;
+  border: 1px solid transparent;
+}
+
+.badge.badge-success { background: var(--success-muted); color: var(--success); }
+.badge.badge-warning { background: var(--warning-muted); color: var(--warning); }
+.badge.badge-danger { background: var(--danger-muted); color: var(--danger); }
+.badge.badge-accent { background: var(--accent-muted); color: var(--accent); }
+
+/* --- Markdown Body --- */
+.markdown-body {
+  font-family: inherit;
+}
+.markdown-body p {
+  margin-top: 0;
+  margin-bottom: var(--sp-3);
+}
+.markdown-body p:last-child {
+  margin-bottom: 0;
+}
+.markdown-body ul, .markdown-body ol {
+  margin-top: 0;
+  margin-bottom: var(--sp-3);
+  padding-left: var(--sp-5);
+}
+.markdown-body li {
+  margin-bottom: var(--sp-1);
+}
+.markdown-body strong {
+  font-weight: 600;
+}
+.markdown-body .katex-display {
+  margin: var(--sp-4) 0;
+  padding: var(--sp-4);
+  background: var(--bg-inset);
+  border-radius: var(--radius);
+  border: 1px solid var(--border-subtle);
+  overflow-x: auto;
+}
+.badge-neutral { background: var(--bg-inset); color: var(--text-secondary); border-color: var(--border-muted); }
+
+/* ─── Matrix grid specifics ───────────────────────────────────────────── */
+.matrix-grid-wrapper {
+  overflow-x: auto;
+  margin-top: var(--sp-2);
+  padding-bottom: var(--sp-2);
+}
+.matrix-grid {
+  display: grid;
+  gap: 0;
+  background: var(--border-default);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.matrix-cell {
+  background: var(--bg-surface);
+  position: relative;
+}
+.matrix-cell-header {
+  background: var(--bg-inset);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.cell-input {
+  width: 100%;
+  height: 100%;
+  padding: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  text-align: center;
+  color: var(--text-primary);
+  background: transparent;
+  border: none;
+  outline: none;
+  caret-color: var(--accent);
+}
+.cell-input.cost-input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 4px 6px;
+  font-size: 0.875rem;
+  text-align: left;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+.cell-input.cost-input:focus {
+  background: var(--accent-subtle);
+  color: var(--text-primary);
+  z-index: 10;
+}
+.cell-input:focus { background: var(--accent-subtle); }
+.cell-input::placeholder { color: var(--text-disabled); font-size: 0.875rem; }
+
+/* ─── Dividers ────────────────────────────────────────────────────────── */
+.divider {
+  height: 1px;
+  background: var(--border-subtle);
+  margin: var(--sp-4) 0;
+}
+
+/* ─── Animation utilities ─────────────────────────────────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+  .fade-in {
+    animation: fadeIn 300ms ease-out forwards;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: none; }
+  }
+}
+
+/* ─── Number display ──────────────────────────────────────────────────── */
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.num-large {
+  font-family: var(--font-mono);
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── Status dots ─────────────────────────────────────────────────────── */
+.dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.dot-success { background: var(--success); }
+.dot-warning { background: var(--warning); }
+.dot-danger  { background: var(--danger); }
+.dot-info    { background: var(--accent); }
+.dot-neutral { background: var(--text-disabled); }
+
+/* ─── Focus ring ──────────────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ─── Responsive ──────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .container { padding: 0 var(--sp-4); }
+  h1 { font-size: 1.5rem; }
+  h2 { font-size: 1.25rem; }
+}
