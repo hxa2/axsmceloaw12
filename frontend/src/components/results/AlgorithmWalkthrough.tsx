@@ -27,7 +27,7 @@ interface MicroStep {
   phase: Phase
   title: string
   markdown: string
-  
+
   // Matrix data
   allocationMatrix: number[][]
   basisCells?: [number, number][]
@@ -37,7 +37,7 @@ interface MicroStep {
   enteringCell?: [number, number] | null
   leavingCell?: [number, number] | null
   cycle?: [number, number][] | null
-  
+
   // View toggles
   showPotentials?: boolean
   showReducedCosts?: boolean
@@ -50,37 +50,37 @@ export function AlgorithmWalkthrough({
   presentationMode,
   togglePresentationMode
 }: AlgorithmWalkthroughProps) {
-  
+
   const m = request.supply.length
   const n = request.demand.length
-  
+
   // Sinh các MicroStep dựa trên SolveResponse
   const steps = useMemo(() => {
     const list: MicroStep[] = []
-    
+
     // 1. Setup Phase
     const sumSupply = request.supply.reduce((a, b) => a + b, 0)
     const sumDemand = request.demand.reduce((a, b) => a + b, 0)
     const isBalanced = sumSupply === sumDemand
-    
+
     list.push({
       id: 'setup',
       phase: 'setup',
       title: 'Dữ liệu đầu vào',
       markdown: `
 Bài toán vận tải gồm **${m}** trạm phát và **${n}** trạm thu.
-- Tổng lượng phát (Supply): **${sumSupply}**
-- Tổng lượng thu (Demand): **${sumDemand}**
-${isBalanced ? '\n✓ Bài toán đã cân bằng (Tổng phát = Tổng thu).' : `\n⚠ Bài toán không cân bằng. Hệ thống đã tự động thêm ${sumSupply > sumDemand ? 'trạm thu ảo (Dummy Destination)' : 'trạm phát ảo (Dummy Source)'} với cước phí bằng 0 để cân bằng.`}
+- Tổng lượng phát: **${sumSupply}**
+- Tổng lượng thu: **${sumDemand}**
+${isBalanced ? '\n✓ Bài toán đã cân bằng (Tổng phát = Tổng thu).' : `\n⚠ Bài toán không cân bằng. Hệ thống đã tự động thêm ${sumSupply > sumDemand ? 'trạm thu ảo' : 'trạm phát ảo'} với cước phí bằng 0 để cân bằng.`}
 
 **Điều kiện cân bằng:**
 $$ \\sum_{i=1}^{m} a_i = \\sum_{j=1}^{n} b_j $$
       `,
       allocationMatrix: Array(m).fill(0).map(() => Array(n).fill(0)),
     })
-    
+
     if (response.iterations.length === 0) return list
-    
+
     // 2. Initial Solution
     const iter0 = response.iterations[0]
     list.push({
@@ -90,25 +90,25 @@ $$ \\sum_{i=1}^{m} a_i = \\sum_{j=1}^{n} b_j $$
       markdown: `
 Sử dụng phương pháp: **${request.initialMethod === 'least_cost' ? 'Cực tiểu chi phí' : 'Góc Tây Bắc'}**.
 - Chi phí ban đầu: **${iter0.totalCost}**
-- Các ô có lượng phân bổ > 0 tạo thành tập cơ sở ban đầu (Basis Cells).
+- Các ô có lượng phân bổ > 0 tạo thành tập cơ sở ban đầu.
       `,
       allocationMatrix: iter0.allocationMatrix,
-      basisCells: iter0.allocationMatrix.flatMap((row, i) => 
+      basisCells: iter0.allocationMatrix.flatMap((row, i) =>
         row.map((val, j) => val > 0 ? [i, j] as [number, number] : null)
       ).filter(Boolean) as [number, number][],
     })
-    
+
     // 3. Optimization Iterations
     let lastAlloc = iter0.allocationMatrix
-    let lastBasis = iter0.allocationMatrix.flatMap((row, i) => 
-        row.map((val, j) => val > 0 ? [i, j] as [number, number] : null)
-      ).filter(Boolean) as [number, number][]
-      
+    let lastBasis = iter0.allocationMatrix.flatMap((row, i) =>
+      row.map((val, j) => val > 0 ? [i, j] as [number, number] : null)
+    ).filter(Boolean) as [number, number][]
+
     for (let k = 1; k < response.iterations.length; k++) {
       const iter = response.iterations[k]
       const isLast = k === response.iterations.length - 1
       const loopStr = `Vòng ${k}`
-      
+
       // Phase C: Potentials
       if (iter.potentialsU && iter.potentialsV) {
         list.push({
@@ -116,7 +116,7 @@ Sử dụng phương pháp: **${request.initialMethod === 'least_cost' ? 'Cực 
           phase: 'potentials',
           title: `[${loopStr}] Tính hệ số thế vị`,
           markdown: `
-Dựa trên tập cơ sở hiện tại, ta tính các hệ số thế vị $u_i$ (cho dòng) và $v_j$ (cho cột).
+Dựa trên tập cơ sở hiện tại, ta tính các hệ số thế vị $u_i$ và $v_j$.
 Gán $u_1 = 0$, các giá trị còn lại được tính sao cho đối với mọi ô cơ sở $(i,j)$:
 $$ u_i + v_j = c_{i,j} \\quad \\text{(với } x_{i,j} \\in \\text{Cơ sở)} $$
           `,
@@ -127,7 +127,7 @@ $$ u_i + v_j = c_{i,j} \\quad \\text{(với } x_{i,j} \\in \\text{Cơ sở)} $$
           showPotentials: true,
         })
       }
-      
+
       // Phase D: Reduced Costs
       if (iter.reducedCosts) {
         let bestVal = Infinity
@@ -136,16 +136,16 @@ $$ u_i + v_j = c_{i,j} \\quad \\text{(với } x_{i,j} \\in \\text{Cơ sở)} $$
           if (val !== null && val < 0) hasNegative = true
           if (val !== null && val < bestVal) bestVal = val
         }))
-        
+
         if (iter.isOptimal) {
           list.push({
             id: `optimal-check-${k}`,
             phase: 'optimal',
             title: `[${loopStr}] Kiểm tra tối ưu`,
             markdown: `
-Ta tính ma trận chi phí giảm $\\Delta_{ij} = u_i + v_j - c_{ij}$ (theo sách giáo khoa Liên Xô) hoặc $\\Delta_{ij} = c_{ij} - u_i - v_j$.
+Ta tính ma trận chi phí giảm $\\Delta_{ij} = u_i + v_j - c_{ij}$.
 
-Nếu tất cả $\\Delta \\le 0$ (hoặc $\\ge 0$ tùy định nghĩa), nghiệm là tối ưu.
+Nếu tất cả $\\Delta_{ij} <= 0$, nghiệm là tối ưu.
 $$ \\Delta_{ij} \\le 0 \\implies \\text{Tối ưu} $$
 **✓ Tất cả các ô ngoài cơ sở đều thỏa điều kiện tối ưu.**
             `,
@@ -161,13 +161,13 @@ $$ \\Delta_{ij} \\le 0 \\implies \\text{Tối ưu} $$
           list.push({
             id: `rc-${k}`,
             phase: 'reduced_costs',
-            title: `[${loopStr}] Tìm ô vào (Entering Cell)`,
+            title: `[${loopStr}] Tìm ô vào`,
             markdown: `
-Vì còn tồn tại ô có $\\Delta_{ij}$ vi phạm điều kiện tối ưu (làm giảm tổng chi phí nếu được phân bổ), phương án hiện tại chưa tối ưu.
+Vì còn tồn tại ô có $\\Delta_{ij}$ vi phạm điều kiện tối ưu, phương án hiện tại chưa tối ưu.
 
-Chọn ô có $\\Delta_{ij}$ vi phạm lớn nhất (ở đây là **${bestVal}**) làm **Ô vào cơ sở (Entering Cell)**.
+Chọn ô có $\\Delta_{ij}$ vi phạm lớn nhất (ở đây là **${bestVal}**) làm **Ô vào cơ sở**.
 $$ \\text{Chọn ô có } \\Delta_{ij} \\text{ âm nhất} $$
-Ô được chọn: **Dòng ${iter.enteringCell?.[0] !== undefined ? iter.enteringCell[0]+1 : '?'}, Cột ${iter.enteringCell?.[1] !== undefined ? iter.enteringCell[1]+1 : '?'}**.
+Ô được chọn: **Dòng ${iter.enteringCell?.[0] !== undefined ? iter.enteringCell[0] + 1 : '?'}, Cột ${iter.enteringCell?.[1] !== undefined ? iter.enteringCell[1] + 2 : '?'}**.
             `,
             allocationMatrix: lastAlloc,
             basisCells: lastBasis,
@@ -178,7 +178,7 @@ $$ \\text{Chọn ô có } \\Delta_{ij} \\text{ âm nhất} $$
             showPotentials: true,
             showReducedCosts: true,
           })
-          
+
           // Phase F & G: Cycle & Theta
           if (iter.cycle && iter.theta !== undefined && iter.leavingCell) {
             list.push({
@@ -193,7 +193,7 @@ Lượng điều chỉnh tối đa $\\theta$ là giá trị phân bổ nhỏ nh�
 
 $$ \\theta = \\min \\{ x_{i,j} \\mid (i,j) \\in \\text{Chu trình (-)} \\} $$
 
-**$\\theta = ${iter.theta}$**. Ô đạt giá trị này trở thành **Ô ra (Leaving Cell)**: Dòng ${iter.leavingCell[0]+1}, Cột ${iter.leavingCell[1]+1}.
+**$\\theta = ${iter.theta}$**. Ô đạt giá trị này trở thành **Ô ra**: Dòng ${iter.leavingCell[0] + 1}, Cột ${iter.leavingCell[1] + 1}.
               `,
               allocationMatrix: lastAlloc,
               basisCells: lastBasis,
@@ -202,10 +202,10 @@ $$ \\theta = \\min \\{ x_{i,j} \\mid (i,j) \\in \\text{Chu trình (-)} \\} $$
               cycle: iter.cycle,
               showCycle: true,
             })
-            
+
             // Cập nhật lastBasis và lastAlloc cho bước update
             lastAlloc = iter.allocationMatrix
-            
+
             // Xây dựng basis mới một cách tường minh từ thuật toán: basis_new = basis_old + entering - leaving
             // (Mặc dù có thể dùng allocationMatrix > 0, nhưng suy biến có thể làm ô = 0 vẫn thuộc basis)
             const nextBasisSet = new Set(lastBasis.map(b => `${b[0]},${b[1]}`))
@@ -215,7 +215,7 @@ $$ \\theta = \\min \\{ x_{i,j} \\mid (i,j) \\in \\text{Chu trình (-)} \\} $$
               const parts = s.split(',')
               return [parseInt(parts[0], 10), parseInt(parts[1], 10)] as [number, number]
             })
-            
+
             list.push({
               id: `update-${k}`,
               phase: 'update',
@@ -235,7 +235,7 @@ Chi phí mới: **${iter.totalCost}**.
         }
       }
     }
-    
+
     // Final Solution
     if (response.isOptimal) {
       list.push({
@@ -255,27 +255,27 @@ Bạn có thể xem biểu đồ mạng lưới hoặc biểu đồ chi phí ở
         basisCells: response.basisCells,
       })
     }
-    
+
     return list
   }, [request, response])
-  
+
   const [stepIndex, setStepIndex] = useState(0)
   const [isPlaying, setIsPlaying] = useState(false)
   const [playbackSpeed, setPlaybackSpeed] = useState(1500)
-  
+
   const [visiblePanels, setVisiblePanels] = useState({
     explainer: true,
     matrix: true,
     network: false,
     chart: false
   })
-  
+
   const togglePanel = (panel: keyof typeof visiblePanels) => {
     setVisiblePanels(prev => ({ ...prev, [panel]: !prev[panel] }))
   }
-  
+
   const step = steps[stepIndex]
-  
+
   const nextStep = useCallback(() => {
     setStepIndex(prev => {
       if (prev >= steps.length - 1) {
@@ -285,12 +285,12 @@ Bạn có thể xem biểu đồ mạng lưới hoặc biểu đồ chi phí ở
       return prev + 1
     })
   }, [steps.length])
-  
+
   const prevStep = useCallback(() => {
     setStepIndex(prev => Math.max(prev - 1, 0))
     setIsPlaying(false)
   }, [])
-  
+
   // Auto-run logic
   useEffect(() => {
     if (!isPlaying) return
@@ -305,7 +305,7 @@ Bạn có thể xem biểu đồ mạng lưới hoặc biểu đồ chi phí ở
     }, playbackSpeed)
     return () => clearInterval(timer)
   }, [isPlaying, steps.length, playbackSpeed])
-  
+
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -318,16 +318,16 @@ Bạn có thể xem biểu đồ mạng lưới hoặc biểu đồ chi phí ở
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [nextStep, prevStep])
-  
+
   if (!step) return null
-  
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: 'var(--sp-4)' }}>
-      
+
       {/* Top Controls */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--sp-4)' }}>
         <h3 style={{ margin: 0, fontSize: '1.25rem' }}>Các bước giải ({stepIndex + 1}/{steps.length})</h3>
-        
+
         <div style={{ display: 'flex', gap: 'var(--sp-4)', alignItems: 'center', flexWrap: 'wrap' }}>
           {/* View Toggles */}
           <div style={{ display: 'flex', gap: 'var(--sp-2)', padding: 'var(--sp-1)', background: 'var(--bg-inset)', borderRadius: 'var(--radius)', border: '1px solid var(--border-subtle)' }}>
@@ -361,27 +361,27 @@ Bạn có thể xem biểu đồ mạng lưới hoặc biểu đồ chi phí ở
           </div>
         </div>
       </div>
-      
+
       {/* Main Content Area */}
       <div style={{ display: 'flex', flex: 1, gap: 'var(--sp-6)', minHeight: 0, flexDirection: presentationMode ? 'column' : 'row' }}>
-        
+
         {/* Visualizations Container (flex: 1 or flex: 2 depending on layout) */}
         {(visiblePanels.matrix || visiblePanels.network || visiblePanels.chart) && (
-          <div style={{ 
-            flex: visiblePanels.explainer && !presentationMode ? 2 : 1, 
-            display: 'flex', 
+          <div style={{
+            flex: visiblePanels.explainer && !presentationMode ? 2 : 1,
+            display: 'flex',
             flexDirection: presentationMode ? 'row' : 'column',
             gap: 'var(--sp-4)',
             minHeight: 0
           }}>
-            
+
             {visiblePanels.matrix && (
-              <div style={{ 
+              <div style={{
                 flex: 1,
-                display: 'flex', 
+                display: 'flex',
                 flexDirection: 'column',
-                background: 'var(--bg-surface)', 
-                borderRadius: 'var(--radius-lg)', 
+                background: 'var(--bg-surface)',
+                borderRadius: 'var(--radius-lg)',
                 border: '1px solid var(--border-subtle)',
                 overflow: 'hidden',
                 minHeight: 0
@@ -400,8 +400,8 @@ Bạn có thể xem biểu đồ mạng lưới hoặc biểu đồ chi phí ở
                           <CornersOut size={16} />
                         </button>
                       </div>
-                      
-                      <TransformComponent 
+
+                      <TransformComponent
                         wrapperStyle={{ width: '100%', height: '100%', minHeight: 0, flex: 1 }}
                         contentStyle={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 'var(--sp-6)' }}
                       >
@@ -433,7 +433,7 @@ Bạn có thể xem biểu đồ mạng lưới hoặc biểu đồ chi phí ở
                 </TransformWrapper>
               </div>
             )}
-            
+
             {visiblePanels.network && (
               <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
                 <NetworkFlowView
@@ -446,10 +446,10 @@ Bạn có thể xem biểu đồ mạng lưới hoặc biểu đồ chi phí ở
                 />
               </div>
             )}
-            
+
             {visiblePanels.chart && (
               <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-                <CostProgressChart 
+                <CostProgressChart
                   initialCost={response.initialCost ?? 0}
                   iterations={response.iterations}
                   optimalCost={response.totalCost}
@@ -461,10 +461,10 @@ Bạn có thể xem biểu đồ mạng lưới hoặc biểu đồ chi phí ở
 
         {/* Explainer Container */}
         {visiblePanels.explainer && (
-          <div style={{ 
-            flex: (!visiblePanels.matrix && !visiblePanels.network && !visiblePanels.chart) ? 1 : (presentationMode ? 'none' : 1), 
-            background: 'var(--bg-surface)', 
-            borderRadius: 'var(--radius-lg)', 
+          <div style={{
+            flex: (!visiblePanels.matrix && !visiblePanels.network && !visiblePanels.chart) ? 1 : (presentationMode ? 'none' : 1),
+            background: 'var(--bg-surface)',
+            borderRadius: 'var(--radius-lg)',
             border: '1px solid var(--border-subtle)',
             boxShadow: 'var(--shadow-sm)',
             flexShrink: 0,
