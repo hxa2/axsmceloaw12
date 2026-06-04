@@ -4,8 +4,9 @@ backend/app/schemas/response.py
 Pydantic schemas cho response đầu ra.
 """
 
-from typing import Optional
+from typing import Any, Optional
 from pydantic import BaseModel
+
 
 
 class IterationResponse(BaseModel):
@@ -44,6 +45,14 @@ class SolveResponse(BaseModel):
     sourceNames: Optional[list[str]] = None
     destinationNames: Optional[list[str]] = None
 
+    # Metadata cân bằng
+    isBalancedOriginal: bool = True
+    balanceType: str = "none"  # "none" | "dummy_source" | "dummy_destination"
+    dummySourceIndex: Optional[int] = None
+    dummyDestinationIndex: Optional[int] = None
+    originalSupplyTotal: Optional[float] = None
+    originalDemandTotal: Optional[float] = None
+
 
 class MethodInfo(BaseModel):
     """Thông tin một thuật toán."""
@@ -80,3 +89,41 @@ class HealthResponse(BaseModel):
     status: str
     version: str
     message: str
+
+
+# ── Extended Problem Schemas ──────────────────────────────────────────────────
+
+class TransformationInfo(BaseModel):
+    """Mô tả một bước biến đổi bài toán."""
+    type: str
+    description: str
+    formula: Optional[str] = None
+    details: Optional[dict[str, Any]] = None
+
+
+class StepInfo(BaseModel):
+    """Một bước trong quá trình giải (walkthrough)."""
+    type: str
+    description: str
+    matrixBefore: Optional[list[list[Any]]] = None
+    matrixAfter: Optional[list[list[Any]]] = None
+    details: Optional[dict[str, Any]] = None
+
+
+class ExtendedSolveResponse(BaseModel):
+    """Schema response chung cho bài toán mở rộng."""
+    problemType: str          # "transportation" | "assignment"
+    variant: str              # "max_profit" | "forbidden_cells" | "inequality" | "warehouse" | "assignment"
+
+    originalProblem: dict[str, Any]
+    transformedProblem: dict[str, Any]
+    transformations: list[TransformationInfo] = []
+
+    solution: dict[str, Any]
+    interpretation: dict[str, Any] = {}
+    steps: list[StepInfo] = []
+
+    warnings: list[str] = []
+    isOptimal: bool = True
+    isFeasible: bool = True
+    infeasibilityReason: Optional[str] = None

@@ -42,6 +42,14 @@ export interface SolveResponse {
   demand?: number[]
   sourceNames: string[] | null
   destinationNames: string[] | null
+
+  // Balance metadata
+  isBalancedOriginal?: boolean
+  balanceType?: 'none' | 'dummy_source' | 'dummy_destination'
+  dummySourceIndex?: number | null
+  dummyDestinationIndex?: number | null
+  originalSupplyTotal?: number | null
+  originalDemandTotal?: number | null
 }
 
 export interface SolveRequest {

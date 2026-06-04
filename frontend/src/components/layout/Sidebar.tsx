@@ -38,13 +38,13 @@ interface SidebarProps {
 
 type ActiveTab = 'settings' | 'samples'
 
-export const Sidebar = memo(function Sidebar({ 
-  editorState, 
-  setEditorState, 
-  onSolve, 
-  onSolveFromFile, 
-  onReset, 
-  loading 
+export const Sidebar = memo(function Sidebar({
+  editorState,
+  setEditorState,
+  onSolve,
+  onSolveFromFile,
+  onReset,
+  loading
 }: SidebarProps) {
   const [activeTab, setActiveTab] = useState<ActiveTab>('settings')
   const [samples, setSamples] = useState<SampleProblem[]>([])
@@ -53,7 +53,7 @@ export const Sidebar = memo(function Sidebar({
 
   // Load samples on mount
   useEffect(() => {
-    api.getSamples().then(setSamples).catch(() => {})
+    api.getSamples().then(setSamples).catch(() => { })
   }, [])
 
   // Client-side validation
@@ -176,8 +176,8 @@ export const Sidebar = memo(function Sidebar({
                   }))
                 }
                 options={[
-                  { id: 'least_cost', label: 'Cực tiểu chi phí (Least Cost)', description: 'Chọn ô có cước phí nhỏ nhất' },
-                  { id: 'northwest_corner', label: 'Góc Tây Bắc (Northwest Corner)', description: 'Bắt đầu từ góc trên trái' },
+                  { id: 'least_cost', label: 'Cực tiểu chi phí', description: 'Chọn ô có cước phí nhỏ nhất' },
+                  { id: 'northwest_corner', label: 'Góc Tây Bắc', description: 'Bắt đầu từ góc trên trái' },
                 ]}
               />
             </div>
@@ -198,7 +198,7 @@ export const Sidebar = memo(function Sidebar({
                   }))
                 }
                 options={[
-                  { id: 'potential', label: 'Phương pháp Thế vị (MODI)', description: 'Tối ưu bằng thế vị u, v' },
+                  { id: 'potential', label: 'Phương pháp Thế vị', description: 'Tối ưu bằng thế vị u, v' },
                   { id: 'none', label: 'Chỉ khởi tạo (không tối ưu)', description: 'Trả ngay phương án ban đầu' },
                 ]}
               />

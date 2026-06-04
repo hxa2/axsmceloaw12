@@ -30,6 +30,22 @@ class ValidationResult:
         return self.errors[0] if self.errors else None
 
 
+@dataclass
+class BalanceResult:
+    """Kết quả sau khi cân bằng bài toán vận tải."""
+    cost_matrix: list
+    supply: list
+    demand: list
+    warnings: List[str]
+    is_balanced_original: bool
+    balance_type: str  # "none" | "dummy_source" | "dummy_destination"
+    dummy_source_index: Optional[int]
+    dummy_destination_index: Optional[int]
+    original_supply_total: float
+    original_demand_total: float
+
+
+
 class TransportationValidator:
     """
     Validator chuyên biệt cho bài toán vận tải.
@@ -189,43 +205,79 @@ class TransportationValidator:
         cost_matrix: list,
         supply: list,
         demand: list,
-    ) -> tuple[list, list, list, list[str]]:
+    ) -> BalanceResult:
         """
         Cân bằng bài toán vận tải bằng cách thêm dummy row/column.
 
         Returns
         -------
-        (cost_matrix_balanced, supply_balanced, demand_balanced, warnings)
+        BalanceResult với dữ liệu đã cân bằng và metadata.
         """
-        warnings: list[str] = []
+        warnings_list: list[str] = []
         cost_matrix = [list(row) for row in cost_matrix]
         supply = list(supply)
         demand = list(demand)
 
-        total_supply = sum(supply)
-        total_demand = sum(demand)
-        diff = total_supply - total_demand
+        original_supply_total = sum(supply)
+        original_demand_total = sum(demand)
+        diff = original_supply_total - original_demand_total
 
         if abs(diff) <= self._EPS:
-            return cost_matrix, supply, demand, warnings
+            return BalanceResult(
+                cost_matrix=cost_matrix,
+                supply=supply,
+                demand=demand,
+                warnings=warnings_list,
+                is_balanced_original=True,
+                balance_type="none",
+                dummy_source_index=None,
+                dummy_destination_index=None,
+                original_supply_total=original_supply_total,
+                original_demand_total=original_demand_total,
+            )
 
         if diff > 0:
             # Cung > Cầu → thêm dummy destination (cột chi phí 0)
             for row in cost_matrix:
                 row.append(0.0)
             demand.append(diff)
-            warnings.append(
+            dummy_dest_index = len(demand) - 1
+            warnings_list.append(
                 f"Đã thêm trạm thu giả (dummy) với nhu cầu {diff:.4g} "
                 f"(chi phí vận chuyển = 0)."
+            )
+            return BalanceResult(
+                cost_matrix=cost_matrix,
+                supply=supply,
+                demand=demand,
+                warnings=warnings_list,
+                is_balanced_original=False,
+                balance_type="dummy_destination",
+                dummy_source_index=None,
+                dummy_destination_index=dummy_dest_index,
+                original_supply_total=original_supply_total,
+                original_demand_total=original_demand_total,
             )
         else:
             # Cầu > Cung → thêm dummy source (hàng chi phí 0)
             n = len(demand)
             cost_matrix.append([0.0] * n)
             supply.append(-diff)
-            warnings.append(
+            dummy_src_index = len(supply) - 1
+            warnings_list.append(
                 f"Đã thêm trạm phát giả (dummy) với lượng {-diff:.4g} "
                 f"(chi phí vận chuyển = 0)."
             )
+            return BalanceResult(
+                cost_matrix=cost_matrix,
+                supply=supply,
+                demand=demand,
+                warnings=warnings_list,
+                is_balanced_original=False,
+                balance_type="dummy_source",
+                dummy_source_index=dummy_src_index,
+                dummy_destination_index=None,
+                original_supply_total=original_supply_total,
+                original_demand_total=original_demand_total,
+            )
 
-        return cost_matrix, supply, demand, warnings

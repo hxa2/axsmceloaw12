@@ -24,8 +24,15 @@ from fastapi.responses import Response
 from backend.app.repositories.csv_repository import CsvRepository
 from backend.app.repositories.excel_repository import ExcelRepository
 from backend.app.repositories.json_repository import JsonRepository
-from backend.app.schemas.request import SolveRequest
+from backend.app.schemas.request import (
+    SolveRequest,
+    MaxTransportRequest,
+    ForbiddenCellsRequest,
+    InequalityRequest,
+    WarehouseRequest,
+)
 from backend.app.schemas.response import (
+    ExtendedSolveResponse,
     HealthResponse,
     MethodInfo,
     MethodsResponse,
@@ -34,6 +41,12 @@ from backend.app.schemas.response import (
 )
 from backend.app.services.sample_data_service import SampleDataService
 from backend.app.services.solver_service import SolverService
+from backend.app.services.extended_transport_service import (
+    solve_max_transportation,
+    solve_forbidden_cells,
+    solve_inequality,
+    solve_warehouse,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -45,6 +58,7 @@ _sample_service = SampleDataService()
 _excel_repo = ExcelRepository()
 _csv_repo = CsvRepository()
 _json_repo = JsonRepository()
+
 
 
 # ── Health check ─────────────────────────────────────────────────────────────
@@ -205,3 +219,65 @@ async def solve_from_file(
     )
 
     return _solver_service.solve(solve_request)
+
+
+# ── Extended Transportation Endpoints ─────────────────────────────────────────
+
+@router.post(
+    "/max",
+    response_model=ExtendedSolveResponse,
+    summary="Giải bài toán vận tải dạng Max (tối đa lợi nhuận)",
+)
+async def solve_max(request: MaxTransportRequest) -> ExtendedSolveResponse:
+    """
+    Giải bài toán vận tải tối đa lợi nhuận.
+
+    Tự động chuyển sang bài toán Min bằng c'_ij = P_max - p_ij.
+    Trả lại totalProfit tính từ ma trận lợi nhuận gốc.
+    """
+    return solve_max_transportation(request)
+
+
+@router.post(
+    "/forbidden",
+    response_model=ExtendedSolveResponse,
+    summary="Giải bài toán vận tải có ô cấm (Big-M)",
+)
+async def solve_forbidden(request: ForbiddenCellsRequest) -> ExtendedSolveResponse:
+    """
+    Giải bài toán vận tải có một số tuyến bị cấm.
+
+    Dùng phương pháp Big-M: thay chi phí ô cấm bằng M rất lớn.
+    Response trả về `interpretation.isFeasibleRespectingForbiddenCells`.
+    """
+    return solve_forbidden_cells(request)
+
+
+@router.post(
+    "/inequality",
+    response_model=ExtendedSolveResponse,
+    summary="Giải bài toán vận tải với ràng buộc bất đẳng thức",
+)
+async def solve_inequality_endpoint(request: InequalityRequest) -> ExtendedSolveResponse:
+    """
+    Giải bài toán vận tải với ràng buộc nguồn/cầu dạng bất đẳng thức.
+
+    Hiện hỗ trợ: supplyConstraint='less_or_equal', demandConstraint='equal'.
+    Nếu totalSupply > totalDemand, tự động thêm destination ảo 'Không sử dụng'.
+    """
+    return solve_inequality(request)
+
+
+@router.post(
+    "/warehouse",
+    response_model=ExtendedSolveResponse,
+    summary="Giải bài toán lập kho nhận hàng",
+)
+async def solve_warehouse_endpoint(request: WarehouseRequest) -> ExtendedSolveResponse:
+    """
+    Giải bài toán vận tải với các kho nhận hàng mới.
+
+    Mode 'fixed': kho mới được xem như điểm thu với nhu cầu cố định.
+    Mode 'max_capacity': chưa hỗ trợ, trả lỗi 422.
+    """
+    return solve_warehouse(request)

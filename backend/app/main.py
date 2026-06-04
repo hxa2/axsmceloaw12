@@ -17,6 +17,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from backend.app.api.transportation import router as transportation_router
+from backend.app.api.assignment import router as assignment_router
 from backend.app.config import settings
 
 # ── Cấu hình logging ──────────────────────────────────────────────────────────
@@ -50,6 +51,8 @@ app.add_middleware(
 
 # ── Include routers ───────────────────────────────────────────────────────────
 app.include_router(transportation_router)
+app.include_router(assignment_router)
+
 
 # ── Global exception handlers ─────────────────────────────────────────────────
 

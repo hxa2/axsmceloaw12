@@ -51,27 +51,47 @@ export function AlgorithmWalkthrough({
   togglePresentationMode
 }: AlgorithmWalkthroughProps) {
 
-  const m = request.supply.length
-  const n = request.demand.length
+  // Ưu tiên dùng dữ liệu đã cân bằng từ response, fallback sang request nếu thiếu
+  const effectiveCostMatrix = response.costMatrix ?? request.costMatrix
+  const effectiveSupply = response.supply ?? request.supply
+  const effectiveDemand = response.demand ?? request.demand
+  const effectiveSourceNames = response.sourceNames ?? request.sourceNames
+  const effectiveDestNames = response.destinationNames ?? request.destinationNames
+
+  const m = effectiveSupply.length
+  const n = effectiveDemand.length
+
+  // Dummy index từ metadata response
+  const dummyRowIndex = response.dummySourceIndex ?? null
+  const dummyColIndex = response.dummyDestinationIndex ?? null
 
   // Sinh các MicroStep dựa trên SolveResponse
   const steps = useMemo(() => {
     const list: MicroStep[] = []
 
     // 1. Setup Phase
-    const sumSupply = request.supply.reduce((a, b) => a + b, 0)
-    const sumDemand = request.demand.reduce((a, b) => a + b, 0)
-    const isBalanced = sumSupply === sumDemand
+    // Dùng tổng gốc (trước cân bằng) nếu có
+    const origSupplyTotal = response.originalSupplyTotal ?? effectiveSupply.reduce((a, b) => a + b, 0)
+    const origDemandTotal = response.originalDemandTotal ?? effectiveDemand.reduce((a, b) => a + b, 0)
+    const isBalancedOrig = response.isBalancedOriginal ?? (origSupplyTotal === origDemandTotal)
+
+    // Thông tin về dummy
+    const balanceType = response.balanceType ?? 'none'
+    const dummyNote = balanceType === 'dummy_destination'
+      ? `\n\n> ⚠️ **Bài toán không cân bằng.** Hệ thống đã tự động thêm **cột trạm thu ảo (Dummy)** với nhu cầu **${origSupplyTotal - origDemandTotal}** (cước phí = 0) để cân bằng.`
+      : balanceType === 'dummy_source'
+      ? `\n\n> ⚠️ **Bài toán không cân bằng.** Hệ thống đã tự động thêm **hàng trạm phát ảo (Dummy)** với lượng **${origDemandTotal - origSupplyTotal}** (cước phí = 0) để cân bằng.`
+      : ''
 
     list.push({
       id: 'setup',
       phase: 'setup',
       title: 'Dữ liệu đầu vào',
       markdown: `
-Bài toán vận tải gồm **${m}** trạm phát và **${n}** trạm thu.
-- Tổng lượng phát: **${sumSupply}**
-- Tổng lượng thu: **${sumDemand}**
-${isBalanced ? '\n✓ Bài toán đã cân bằng (Tổng phát = Tổng thu).' : `\n⚠ Bài toán không cân bằng. Hệ thống đã tự động thêm ${sumSupply > sumDemand ? 'trạm thu ảo' : 'trạm phát ảo'} với cước phí bằng 0 để cân bằng.`}
+Bài toán vận tải gồm **${request.supply.length}** trạm phát và **${request.demand.length}** trạm thu (dữ liệu gốc).
+- Tổng lượng phát (gốc): **${origSupplyTotal}**
+- Tổng lượng thu (gốc): **${origDemandTotal}**
+${isBalancedOrig ? '\n✓ Bài toán đã cân bằng (Tổng phát = Tổng thu).' : dummyNote}
 
 **Điều kiện cân bằng:**
 $$ \\sum_{i=1}^{m} a_i = \\sum_{j=1}^{n} b_j $$
@@ -407,12 +427,12 @@ Bạn có thể xem biểu đồ mạng lưới hoặc biểu đồ chi phí ở
                       >
                         <div id="matrix-stage-zoom-target" style={{ padding: '3rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           <MatrixStage
-                            costMatrix={request.costMatrix}
+                            costMatrix={effectiveCostMatrix}
                             allocationMatrix={step.allocationMatrix}
-                            supply={request.supply}
-                            demand={request.demand}
-                            sourceNames={request.sourceNames}
-                            destNames={request.destinationNames}
+                            supply={effectiveSupply}
+                            demand={effectiveDemand}
+                            sourceNames={effectiveSourceNames ?? undefined}
+                            destNames={effectiveDestNames ?? undefined}
                             basisCells={step.basisCells}
                             u={step.u}
                             v={step.v}
@@ -424,6 +444,8 @@ Bạn có thể xem biểu đồ mạng lưới hoặc biểu đồ chi phí ở
                             showReducedCosts={step.showReducedCosts}
                             showCycle={step.showCycle}
                             presentationMode={presentationMode}
+                            dummyRowIndex={dummyRowIndex}
+                            dummyColIndex={dummyColIndex}
                             editable={false}
                           />
                         </div>
@@ -438,11 +460,11 @@ Bạn có thể xem biểu đồ mạng lưới hoặc biểu đồ chi phí ở
               <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
                 <NetworkFlowView
                   allocationMatrix={step.allocationMatrix}
-                  costMatrix={request.costMatrix}
-                  supply={request.supply}
-                  demand={request.demand}
-                  sourceNames={request.sourceNames}
-                  destNames={request.destinationNames}
+                  costMatrix={effectiveCostMatrix}
+                  supply={effectiveSupply}
+                  demand={effectiveDemand}
+                  sourceNames={effectiveSourceNames ?? undefined}
+                  destNames={effectiveDestNames ?? undefined}
                 />
               </div>
             )}

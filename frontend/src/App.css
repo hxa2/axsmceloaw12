@@ -13,14 +13,17 @@
 
 /* ─── Topbar ──────────────────────────────────────────────────────────── */
 .topbar {
-  height: 56px;
+  height: auto;
+  min-height: 56px;
   background: var(--bg-surface);
   border-bottom: 1px solid var(--border-subtle);
   display: flex;
-  align-items: center;
-  padding: 0 var(--sp-4);
+  align-items: stretch;
+  padding: var(--sp-2) var(--sp-4) 0;
   flex-shrink: 0;
   z-index: 10;
+  flex-wrap: wrap;
+  gap: 0;
 }
 
 .topbar-brand {
@@ -335,4 +338,116 @@
 }
 .formula-block .katex-display {
   margin: 0;
+}
+
+.topbar-brand,
+.topbar-sep,
+.topbar-actions {
+  align-self: center;
+  padding-bottom: var(--sp-2);
+}
+
+/* Solve button (shared across all tabs) */
+.solve-btn {
+  padding: 0.625rem 1.25rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-2);
+  width: 100%;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+.solve-btn:hover:not(:disabled) {
+  opacity: 0.88;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow);
+}
+
+/* ─── Extended Page Container ──────────────────────────────────────────── */
+/* Full-width host for extended problem pages */
+.ext-page-container {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+}
+
+/* Two-column layout: sidebar (input) + result area */
+.ext-page-layout {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ─── Extended Sidebar ─────────────────────────────────────────────────── */
+.ext-sidebar {
+  width: 320px;
+  min-width: 280px;
+  max-width: 360px;
+  flex-shrink: 0;
+  background: var(--bg-surface);
+  border-right: 1px solid var(--border-subtle);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  padding: var(--sp-5);
+}
+
+/* ─── Extended Result Area ─────────────────────────────────────────────── */
+.ext-result-area {
+  flex: 1;
+  background: var(--bg-base);
+  overflow-y: auto;
+  padding: var(--sp-6) var(--sp-8);
+  display: flex;
+  flex-direction: column;
+}
+
+.ext-result-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-height: 200px;
+  gap: var(--sp-3);
+}
+
+/* ─── Spinner ──────────────────────────────────────────────────────────── */
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border-muted);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+/* ─── Responsive ───────────────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .ext-page-layout {
+    flex-direction: column;
+  }
+  .ext-sidebar {
+    width: 100%;
+    max-width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--border-subtle);
+  }
 }

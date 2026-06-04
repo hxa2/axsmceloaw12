@@ -130,7 +130,7 @@ class LeastCostMethod(InitialSolutionAlgorithm):
             step=0,
             allocation_matrix=allocation_list,
             total_cost=initial_cost,
-            description=f"Phương án ban đầu (Least Cost). Chi phí = {initial_cost:.4g}",
+            description=f"Phương án ban đầu. Chi phí = {initial_cost:.4g}",
         )
 
         return TransportationSolution(
