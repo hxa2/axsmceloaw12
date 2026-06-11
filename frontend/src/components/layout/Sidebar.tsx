@@ -176,6 +176,7 @@ export const Sidebar = memo(function Sidebar({
                   }))
                 }
                 options={[
+                  { id: 'vogel', label: 'Xấp xỉ Vogel (VAM)', description: 'Dựa trên chênh lệch cước phí' },
                   { id: 'least_cost', label: 'Cực tiểu chi phí', description: 'Chọn ô có cước phí nhỏ nhất' },
                   { id: 'northwest_corner', label: 'Góc Tây Bắc', description: 'Bắt đầu từ góc trên trái' },
                 ]}

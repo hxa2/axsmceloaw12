@@ -108,7 +108,7 @@ $$ \\sum_{i=1}^{m} a_i = \\sum_{j=1}^{n} b_j $$
       phase: 'initial',
       title: 'Phương án khởi tạo',
       markdown: `
-Sử dụng phương pháp: **${request.initialMethod === 'least_cost' ? 'Cực tiểu chi phí' : 'Góc Tây Bắc'}**.
+Sử dụng phương pháp: **${request.initialMethod === 'vogel' ? 'Xấp xỉ Vogel' : request.initialMethod === 'least_cost' ? 'Cực tiểu chi phí' : 'Góc Tây Bắc'}**.
 - Chi phí ban đầu: **${iter0.totalCost}**
 - Các ô có lượng phân bổ > 0 tạo thành tập cơ sở ban đầu.
       `,
