@@ -31,7 +31,6 @@ interface SidebarProps {
   editorState: ProblemEditorState
   setEditorState: React.Dispatch<React.SetStateAction<ProblemEditorState>>
   onSolve: (request: SolveRequest) => void
-  onSolveFromFile: (file: File, options: { initialMethod: string; optimizationMethod: string }) => void
   onReset: () => void
   loading: boolean
 }
@@ -42,7 +41,6 @@ export const Sidebar = memo(function Sidebar({
   editorState,
   setEditorState,
   onSolve,
-  onSolveFromFile,
   onReset,
   loading
 }: SidebarProps) {
@@ -129,17 +127,19 @@ export const Sidebar = memo(function Sidebar({
   }, [editorState.supply.length, editorState.demand.length, handleLoadSample])
 
   const handleFileUpload = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0]
       if (!file) return
       setFileError(null)
-      onSolveFromFile(file, {
-        initialMethod: editorState.initialMethod,
-        optimizationMethod: editorState.optimizationMethod,
-      })
+      try {
+        const sample = await api.parseFile(file)
+        handleLoadSample(sample)
+      } catch (err: any) {
+        setValidationError(err.message || 'Lỗi khi đọc file')
+      }
       e.target.value = ''  // Reset input
     },
-    [onSolveFromFile, editorState.initialMethod, editorState.optimizationMethod],
+    [handleLoadSample],
   )
 
   return (

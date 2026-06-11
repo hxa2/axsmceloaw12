@@ -76,21 +76,11 @@ export const api = {
       body: JSON.stringify(payload),
     }),
 
-  solveFromFile: async (
-    file: File,
-    options: {
-      initialMethod?: string
-      optimizationMethod?: string
-      includeIterations?: boolean
-    } = {},
-  ): Promise<SolveResponse> => {
+  parseFile: async (file: File): Promise<SampleProblem> => {
     const formData = new FormData()
     formData.append('file', file)
-    formData.append('initialMethod', options.initialMethod ?? 'least_cost')
-    formData.append('optimizationMethod', options.optimizationMethod ?? 'potential')
-    formData.append('includeIterations', String(options.includeIterations ?? true))
 
-    const response = await fetch(`${BASE_URL}/solve-from-file`, {
+    const response = await fetch(`${BASE_URL}/parse-file`, {
       method: 'POST',
       body: formData,
     })
@@ -106,7 +96,7 @@ export const api = {
       throw new ApiError(response.status, errorMessage)
     }
 
-    return response.json() as Promise<SolveResponse>
+    return response.json() as Promise<SampleProblem>
   },
 
   // ── Extended Transportation ───────────────────────────────────────────────

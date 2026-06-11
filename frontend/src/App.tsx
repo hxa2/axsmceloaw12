@@ -20,7 +20,7 @@ import { clsx } from 'clsx'
 import './App.css'
 
 function App() {
-  const { state, solve, solveFromFile, reset } = useSolver()
+  const { state, solve, reset } = useSolver()
   const [problemTab, setProblemTab] = useState<ProblemTab>('basic')
 
   // Hoist editorState so it persists across tab switches back to basic
@@ -98,7 +98,6 @@ function App() {
                   editorState={editorState}
                   setEditorState={setEditorState}
                   onSolve={solve}
-                  onSolveFromFile={solveFromFile}
                   onReset={reset}
                   loading={state.status === 'loading'}
                 />

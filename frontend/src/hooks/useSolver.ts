@@ -25,40 +25,11 @@ export function useSolver() {
     }
   }, [])
 
-  const solveFromFile = useCallback(
-    async (
-      file: File,
-      options: { initialMethod?: string; optimizationMethod?: string } = {},
-    ) => {
-      setState({ status: 'loading' })
-      try {
-        const data = await api.solveFromFile(file, options)
-        const dummyReq: SolveRequest = {
-          costMatrix: data.costMatrix ?? [],
-          supply: data.supply ?? [],
-          demand: data.demand ?? [],
-          initialMethod: options.initialMethod as any,
-          optimizationMethod: options.optimizationMethod as any,
-        }
-        setState({ status: 'success', data, request: dummyReq })
-      } catch (err: any) {
-        const message =
-          err instanceof ApiError
-            ? err.message
-            : err instanceof Error
-              ? err.message
-              : 'Lỗi không xác định'
-        setState({ status: 'error', message })
-      }
-    },
-    [],
-  )
-
   const reset = useCallback(() => {
     setState({ status: 'idle' })
   }, [])
 
-  return { state, solve, solveFromFile, reset }
+  return { state, solve, reset }
 }
 
 export function useSamples() {

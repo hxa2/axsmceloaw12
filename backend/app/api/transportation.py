@@ -165,18 +165,15 @@ async def solve(request: SolveRequest) -> SolveResponse:
 
 
 @router.post(
-    "/solve-from-file",
-    response_model=SolveResponse,
-    summary="Giải từ file Excel/CSV/JSON",
+    "/parse-file",
+    response_model=SampleProblemResponse,
+    summary="Phân tích file Excel/CSV/JSON",
 )
-async def solve_from_file(
+async def parse_file(
     file: UploadFile = File(..., description="File Excel (.xlsx), CSV (.csv), hoặc JSON (.json)"),
-    initialMethod: str = Form(default="least_cost"),
-    optimizationMethod: str = Form(default="potential"),
-    includeIterations: bool = Form(default=True),
-) -> SolveResponse:
+) -> SampleProblemResponse:
     """
-    Giải bài toán vận tải từ file upload.
+    Phân tích file upload và trả về dữ liệu bài toán (cước phí, lượng phát, lượng thu).
 
     Hỗ trợ định dạng:
     - `.xlsx` / `.xls`: Excel (3 sheet: cost, supply, demand).
@@ -206,19 +203,15 @@ async def solve_from_file(
             detail=str(exc),
         )
 
-    # Tạo request từ problem
-    solve_request = SolveRequest(
+    return SampleProblemResponse(
+        name=filename,
+        description="Dữ liệu từ file tải lên",
         costMatrix=problem.cost_matrix,
         supply=problem.supply,
         demand=problem.demand,
-        initialMethod=initialMethod,
-        optimizationMethod=optimizationMethod,
         sourceNames=problem.source_names,
         destinationNames=problem.destination_names,
-        includeIterations=includeIterations,
     )
-
-    return _solver_service.solve(solve_request)
 
 
 # ── Extended Transportation Endpoints ─────────────────────────────────────────
