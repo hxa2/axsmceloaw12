@@ -1,0 +1,39 @@
+{
+  "costMatrix": [
+    [
+      6,
+      8,
+      7
+    ],
+    [
+      7,
+      9,
+      5
+    ],
+    [
+      7,
+      10,
+      6
+    ]
+  ],
+  "supply": [
+    100,
+    120,
+    140
+  ],
+  "demand": [
+    60,
+    80,
+    100
+  ],
+  "sourceNames": [
+    "Phát 1",
+    "Phát 2",
+    "Phát 3"
+  ],
+  "destinationNames": [
+    "Thu 1",
+    "Thu 2",
+    "Thu 3"
+  ]
+}
