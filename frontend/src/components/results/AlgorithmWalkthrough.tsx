@@ -150,12 +150,19 @@ $$ u_i + v_j = c_{i,j} \\quad \\text{(với } x_{i,j} \\in \\text{Cơ sở)} $$
 
       // Phase D: Reduced Costs
       if (iter.reducedCosts) {
-        let bestVal = Infinity
-        let hasNegative = false
-        iter.reducedCosts.forEach(row => row.forEach(val => {
-          if (val !== null && val < 0) hasNegative = true
-          if (val !== null && val < bestVal) bestVal = val
-        }))
+        let bestValStr = '?'
+        if (iter.enteringCell && iter.reducedCosts[iter.enteringCell[0]] && iter.reducedCosts[iter.enteringCell[0]][iter.enteringCell[1]] !== null) {
+          const val = iter.reducedCosts[iter.enteringCell[0]][iter.enteringCell[1]] as number
+          bestValStr = val > 0 ? `+${val}` : `${val}`
+        } else {
+          let maxVal = -Infinity
+          iter.reducedCosts.forEach(row => row.forEach(val => {
+            if (val !== null && val > maxVal) maxVal = val
+          }))
+          if (maxVal !== -Infinity) {
+            bestValStr = maxVal > 0 ? `+${maxVal}` : `${maxVal}`
+          }
+        }
 
         if (iter.isOptimal) {
           list.push({
@@ -185,9 +192,9 @@ $$ \\Delta_{ij} \\le 0 \\implies \\text{Tối ưu} $$
             markdown: `
 Vì còn tồn tại ô có $\\Delta_{ij}$ vi phạm điều kiện tối ưu, phương án hiện tại chưa tối ưu.
 
-Chọn ô có $\\Delta_{ij}$ vi phạm lớn nhất (ở đây là **${bestVal}**) làm **Ô vào cơ sở**.
-$$ \\text{Chọn ô có } \\Delta_{ij} \\text{ âm nhất} $$
-Ô được chọn: **Dòng ${iter.enteringCell?.[0] !== undefined ? iter.enteringCell[0] + 1 : '?'}, Cột ${iter.enteringCell?.[1] !== undefined ? iter.enteringCell[1] + 2 : '?'}**.
+Chọn ô có $\\Delta_{ij}$ vi phạm lớn nhất (ở đây là **${bestValStr}**) làm **Ô vào cơ sở**.
+$$ \\text{Chọn ô có } \\Delta_{ij} \\text{ dương lớn nhất} $$
+Ô được chọn: **Dòng ${iter.enteringCell?.[0] !== undefined ? iter.enteringCell[0] + 1 : '?'}, Cột ${iter.enteringCell?.[1] !== undefined ? iter.enteringCell[1] + 1 : '?'}**.
             `,
             allocationMatrix: lastAlloc,
             basisCells: lastBasis,
