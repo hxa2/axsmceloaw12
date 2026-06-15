@@ -86,17 +86,39 @@ async def not_implemented_handler(request: Request, exc: NotImplementedError) ->
     )
 
 
-# ── Root endpoint ─────────────────────────────────────────────────────────────
+import os
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
-@app.get("/", tags=["root"])
-async def root():
-    """Root endpoint."""
-    return {
-        "name": settings.app_name,
-        "version": settings.app_version,
-        "docs": "/docs",
-        "health": "/api/transportation/health",
-    }
+# ── Phục vụ Frontend Static Files (Dành cho Docker Deployment) ───────────────
+frontend_dist = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "frontend", "dist")
+
+if os.path.isdir(frontend_dist):
+    # Mount assets folder
+    app.mount("/assets", StaticFiles(directory=os.path.join(frontend_dist, "assets")), name="assets")
+
+    # Catch-all route to serve index.html for SPA (React Router)
+    @app.get("/{full_path:path}")
+    async def serve_frontend(full_path: str):
+        # Bỏ qua các request bắt đầu bằng /api hoặc /docs đã được FastAPI xử lý
+        if full_path.startswith("api/") or full_path.startswith("docs") or full_path.startswith("redoc"):
+            return JSONResponse(status_code=404, content={"detail": "Not Found"})
+            
+        index_path = os.path.join(frontend_dist, "index.html")
+        if os.path.exists(index_path):
+            return FileResponse(index_path)
+        return JSONResponse(status_code=404, content={"detail": "Frontend build not found"})
+else:
+    # ── Root endpoint (Mặc định khi chạy local backend độc lập) ───────────────
+    @app.get("/", tags=["root"])
+    async def root():
+        """Root endpoint."""
+        return {
+            "name": settings.app_name,
+            "version": settings.app_version,
+            "docs": "/docs",
+            "health": "/api/transportation/health",
+        }
 
 
 if __name__ == "__main__":
